@@ -1,0 +1,32 @@
+{
+  "name": "sgbd",
+  "version": "1.0.0",
+  "description": "myproject",
+  "main": "app.js",
+  "dependencies": {
+    "axios": "^0.23.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.13",
+    "redis": "^3.1.2",
+    "redis-commander": "^0.7.2",
+    "response-time": "^2.3.2"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "css-loader": "^6.5.0",
+    "html-webpack-plugin": "^5.5.0",
+    "node-sass": "^6.0.1",
+    "sass-loader": "^12.3.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.61.0",
+    "webpack-dev-middleware": "^5.2.1",
+    "webpack-livereload-plugin": "^3.0.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
