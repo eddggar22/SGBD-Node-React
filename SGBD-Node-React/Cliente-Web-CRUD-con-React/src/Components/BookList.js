@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 
 const BookList = ({jugadores}) => {
 
@@ -11,6 +11,7 @@ const BookList = ({jugadores}) => {
                     <th>Kills</th>
                     <th>Arma Actual</th>
                     <th>Vida</th>
+                    <th>Imagen</th>
                 </tr>
             </thead>
             <tbody>
@@ -19,8 +20,14 @@ const BookList = ({jugadores}) => {
                     <th>{jugador.id}</th>
                     <th>{jugador.nombre}</th>
                     <th>{jugador.n_arma_actual}</th>
-                    <th>{jugador.key_arma_actual}</th>
+                    <td>
+                     <img src={`/images/${jugador.key_arma_actual}.png`}  alt="40" height="40" />
+                    </td>
                     <th>{jugador.vida}</th>
+                    <td>
+                    <img src={jugador.img} alt="40" height="40" />
+                    </td>
+                    
                   </tr>
                 )
                 )}
@@ -32,3 +39,8 @@ const BookList = ({jugadores}) => {
 }
  
 export default BookList;
+
+   
+//<img src={jugador.img} alt="40" height="40" />
+
+//<img src={"/images/4.png"} alt="40" height="40" />
