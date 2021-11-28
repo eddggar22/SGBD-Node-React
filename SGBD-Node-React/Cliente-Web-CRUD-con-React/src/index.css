@@ -5,9 +5,93 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: url("https://img2.wallspic.com/originals/0/8/2/4/6/164280-edificio-humanos-data-ventana-juego_de_disparos-1920x1080.jpg");
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.contenedor {
+  margin-top: 50px;
+  height: auto;
+  width: 50%;
+  position: relative;
+  left: 25%;
+  border-radius: 50px;
+  background: rgb(217, 217, 218);
+  padding: 30px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-weight: bold;
+}
+
+.contenedor h1{
+  font-size: 35px;
+  margin-bottom: 30px;
+  text-align: center;
+  border-radius: 10px;
+  text-decoration: underline;
+}
+.contenedor p{
+  font-size: 25px;
+  text-align: justify;
+}
+
+.contenedor button{
+  font-size: 30px;
+  width: auto;
+  min-width: 200px;
+  height: 100px;
+  border-radius: 10px;
+  border-width: 5px;
+  margin: auto; 
+  transition-duration: 0.4s;
+  background-color: white; /* Green */
+  /*cambia block por inline-block
+  display: inline-block;*/
+}
+
+.contenedor button:hover{
+  background-color: rgb(44, 44, 44); /* Green */
+  color: white;
+  border-color: white;
+}
+
+.right {
+  float: right;
+}
+
+.contenedor2 {
+  height: auto;
+  width: 50%;
+  position: relative;
+  left: 25%;
+  border-radius: 50px;
+  background: rgb(217, 217, 218);
+  padding: 30px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-weight: bold;
+}
+
+.contenedor3 {
+  margin-top: 50px;
+  height: auto;
+  position: relative;
+  border-radius: 50px;
+}
+
+.contenedor3 button{
+  font-size: 25px;
+  min-width: 150px;
+  width: auto;
+  border-radius: 10px;
+  border-width: 5px;
+  transition-duration: 0.4s;
+}
+
+.contenedor3 button:hover{
+  background-color: rgb(230, 124, 124); /* Green */
+  color: white;
+  border-color: black;
 }

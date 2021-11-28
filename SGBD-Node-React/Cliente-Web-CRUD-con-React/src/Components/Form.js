@@ -116,9 +116,11 @@ const Form = ({myPlayer, setmyPlayer}) => {
                 <label htmlFor="vida" className="form-label">vida</label>
                 <input value={vida}  name="vida" onChange={handleChange} type="number" id="vida" className="form-control"/>
             </div>
+            <div class="contenedor3">
+                <button onClick={actualitzarKills}>Afegir Kills </button>
+                <button class="right" onClick={actualitzarVida}> Actualitzar vida</button>
+            </div>
             
-            <button onClick={actualitzarKills}>Afegir Kills </button>
-            <button onClick={actualitzarVida}> Actualitzar vida</button>
         </form>
     );
 }

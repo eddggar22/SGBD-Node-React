@@ -35,17 +35,94 @@ client.flushdb( function (err, succeeded) {
 
 // Cargamos .html => Inicialiación de BD redis
 app.get('/',function(req,res){
-        client.flushdb( function (err, succeeded) {
-        console.log(succeeded); 
-        });
-        initzalitzar_de_nou();
-        cargar_personajes(); 
-        f_itinerario();
-        armas();
-        ganador="-";
-        res.sendFile(path.join(__dirname+'/index.html'));
+    client.flushdb( function (err, succeeded) {
+    console.log(succeeded); 
+    });
+    initzalitzar_de_nou();
+    cargar_personajes(); 
+    f_itinerario();
+    armas();
+    ganador="-";
+    res.status(200).send();
+    // res.sendFile(path.join(__dirname+'/index.html'));
+    iniciarSimulacion();
 });
 
+// Cargamos .html => Inicialiación de BD redis
+app.post('/',function(req,res){
+    client.flushdb( function (err, succeeded) {
+    console.log(succeeded); 
+    });
+    initzalitzar_de_nou();
+    cargar_personajes(); 
+    f_itinerario();
+    armas();
+    ganador="-";
+    // res.sendFile(path.join(__dirname+'/index.html'));
+    iniciarSimulacion();
+});
+
+function iniciarSimulacion(){
+    ///BUCLE PARA IR ACTUALIZANDO DE FORMA AUTOMÁTICA BD///
+    ///<----------------------------------------------->\\\
+    //Cada 1s ejecuta la función especificada
+    var myInt = setInterval(function () {
+        if(ganador=="-"){
+            // pull, carga todos los datos de los jugadores de base de datos redis a proceso
+            pull_datos();
+
+            // mostramos los jugadores para ver sus armas que todo esté correcto
+            //showPlayers();
+
+            // simulamos una ronda de disparos 
+            simular();
+
+            //actualizamos el vector de jugadores por si nos hacen un app.get('/Jugador/all')
+            update_all();
+
+            //Podemos visualiozar el estado final de todos los jugadores después de dispararse
+            //showPlayersall();
+
+            // exit si gana un jugador
+            // fin_partida();
+        }else{
+            console.log(ganador);
+            clearInterval(myInt);
+            actualizarBaseDatosSQL(); 
+        }
+    }, 2500);
+}
+
+function actualizarBaseDatosSQL(){
+    var arrayAux = v_players_all;
+    arrayAux.sort(compare);
+    console.log("arrayAux.length -> " + arrayAux.length);
+    for(let i=0;i<20;i++){ // TODO falta ordenar por quien ha do quedando mas arriba  
+        const request = require('request');
+
+        const valor1 = arrayAux[i].nombre;
+        const valor2 = 100 - ((i-1) * 5);
+        console.log("------");
+        console.log("i -> " + i);
+        console.log("valor1 -> " + valor1);
+        console.log("valor2 -> " + valor2);
+        const params = `param1=${valor1}&param2=${valor2}`;
+    
+        request(
+        {
+            method: "GET",
+            uri: `http://localhost:4000/actualitzarPersonatges?${params}`,
+            json: true,
+        },
+        (error, response, body) => {
+            if (error) {
+            throw error;
+            }
+            console.log(body);
+        }
+        );
+    }
+}
 
 ///FUNCIONES PARA CARGAR REDIS AL INICIALIZARSE LA API///
 ///<------------------------------------------------->\\\
@@ -90,71 +167,58 @@ async function cargar_personajes(){
     var array = (response.data.results).concat(response2.data.results);
     
     // resond to client, hash para cada jugador
-    for(let i=1;i<=20;i++){
+    for(let i=1;i<=20;i++){                              // <----------------------------------------------- QUITADO EL MENOR O IGUAL DE VENTE
             var _name = array[i].name;
             var imagen = array[i].image;
             var itinerario = Math.floor(Math.random() * (3 - 0));
             var id = 'personaje:' + i;
-            client.hmset(id,'id',i,'nombre',_name, 'vida', 100, 'muertes', 0, 'imagen', imagen, 'grupo_armas', itinerario, 'n_arma_actual', 0);
-    }
-    client.hmset('personaje:0','id',0,'nombre','myPlayer', 'vida', 100, 'muertes', 0, 'imagen', array[25].image, 'grupo_armas', 2, 'n_arma_actual', 0);
+            client.hmset(id,'id',i,'nombre', _name, 'vida', 100, 'muertes', 0, 'imagen', imagen, 'grupo_armas', itinerario, 'n_arma_actual', 0);
+            const request = require('request');
 
+            const valor1 = _name;
+            const valor2 = 0;
+            const params = `param1=${valor1}&param2=${valor2}`;
+    
+            request(
+            {
+                method: "GET",
+                uri: `http://localhost:4000/insertarPersonatges?${params}`,
+                json: true,
+            },
+            (error, response, body) => {
+                if (error) {
+                    console.log(error);
+                    throw error;
+                }
+                console.log(body);
+            }
+            );
+    }
+    client.hmset('personaje:0', 'id', 0, 'nombre', 'myPlayer', 'vida', 100, 'muertes', 0, 'imagen', array[25].image, 'grupo_armas', 2, 'n_arma_actual', 0);
+/*
     //RAUL
     const request = require('request');
 
-        const valor1 = name;
-        const valor2 = 0;
-        const params = `param1=${valor1}&param2=${valor2}`;
+    const valor1 = "myPlayer";
+    const valor2 = 0;
+    const params = `param1=${valor1}&param2=${valor2}`;
 
-        request(
-        {
-            method: "GET",
-            uri: `http://localhost:4000/insertarPersonatges?${params}`,
-            json: true,
-        },
-        (error, response, body) => {
-            if (error) {
-            throw error;
-            }
-            console.log(body);
+    request(
+    {
+        method: "GET",
+        uri: `http://localhost:4000/insertarPersonatges?${params}`,
+        json: true,
+    },
+    (error, response, body) => {
+        if (error) {
+        throw error;
         }
-        );
-    //RAUL
+        console.log(body);
+    }
+    );
+    //RAUL*/
 
 }
-
-
-
-///BUCLE PARA IR ACTUALIZANDO DE FORMA AUTOMÁTICA BD///
-///<----------------------------------------------->\\\
-
-//Cada 1s ejecuta la función especificada
-var myInt = setInterval(function () {
-
-    if(ganador=="-"){
-        // pull, carga todos los datos de los jugadores de base de datos redis a proceso
-        pull_datos();
-
-        // mostramos los jugadores para ver sus armas que todo esté correcto
-        //showPlayers();
-
-        // simulamos una ronda de disparos 
-        simular();
-
-        //actualizamos el vector de jugadores por si nos hacen un app.get('/Jugador/all')
-        update_all();
-
-        //Podemos visualiozar el estado final de todos los jugadores después de dispararse
-        //showPlayersall();
-
-        // exit si gana un jugador
-        //fin_partida();
-    }else{
-        console.log(ganador);
-    }
-
-}, 2500);
-
 
 //Definimos clases
 class Player {
@@ -178,7 +242,6 @@ class PlayerReact {
     }
 }
 
-
 class Arma {
     constructor(precision, daño) {
       this.precision = precision;
@@ -197,9 +260,7 @@ var v_players_all = [pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr
 var id_personajes = ['','','','','','','','','',''];
 var ids =  [0,0,0,0,0,0,0,0,0,0];
 
-
 function initzalitzar_de_nou(){
-
     ganador = "-";
     px = new Player(-1,'nombre_default','-',-1,100);
     ar = new Arma(0,0);
@@ -210,15 +271,12 @@ function initzalitzar_de_nou(){
     v_players_all = [pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr];
     id_personajes = ['','','','','','','','','',''];
     ids =  [0,0,0,0,0,0,0,0,0,0];
-
-
 }
 
 
 // Muestra atributos de jugadores por terminal para ver
 // como evolucionan a lo largo de la partida
 function showPlayers(){
-
     for(var i=0;i<10;i++){
         console.log('nombre ' + v_players[i].nombre);
         console.log('id ' + v_players[i].id);
@@ -229,7 +287,6 @@ function showPlayers(){
 }
 
 function showPlayersall(){
-
     for(var i=0;i<20;i++){
         console.log('ID ' + v_players_all[i].id);
         console.log('nombre ' + v_players_all[i].nombre);
@@ -244,51 +301,39 @@ function showPlayersall(){
 async function pull_datos() {
 
     for (let i = 0; i < 10; i++) {
-        
         var inserit = false;
-
         while (!inserit){
-
             var personaje = 'personaje:' + Math.floor(Math.random() * (20 - 1) + 1);
-
             var repe = false;
             for(let j=0; j<=i; j++){
-
-                if(personaje== id_personajes[j]) repe = true;
-               
+                if(personaje == id_personajes[j]) 
+                    repe = true;
             }
-            
             if(!repe){ 
-                id_personajes[i]= personaje;
-                inserit=true;
+                id_personajes[i] = personaje;
+                inserit = true;
             }
         }
-
     }
 
     // para cada uno de ellos obttendremos sus atributos y armas 
     for (let i = 0; i < 10; i++) {
-
-        personaje=id_personajes[i];
-
+        personaje = id_personajes[i];
         actualizarVector(personaje, i);
-        
-        
     }
 }
 
 
 async function actualizarVector(personaje, i){
 
-    await client.hmget(personaje,'nombre','n_arma_actual','grupo_armas','vida', 'id',function(err, reply) {
-
+    await client.hmget(personaje, 'nombre', 'n_arma_actual', 'grupo_armas', 'vida', 'id', function(err, reply) {
         var p = new Player(reply[4], reply[0], reply[1], reply[2], reply[3]);
         v_players[i] = p;
         var  itinerario = 'itinerario:' + reply[2];
         client.lindex(itinerario,reply[1],function(err, reply2) {
             var key_arma_actual = 'arma:' + reply2;
-            client.hmget(key_arma_actual,'precision','daño', function(err, reply3) {
-                var a = new Arma(reply3[0],reply3[1]);
+            client.hmget(key_arma_actual, 'precision', 'daño', function(err, reply3) {
+                var a = new Arma(reply3[0], reply3[1]);
                 v_armas[i-1] = a;
             });
         });
@@ -299,7 +344,7 @@ async function actualizarVector(personaje, i){
 // Función para simular disparos entre 10 jugadores cada cierto periodo de tiempo.
 async function simular(){
 
-    for(let i=0;i<5;i++){
+    for(let i=0; i<5; i++){
         var p1 = v_players[i*2]; var w1 = v_armas[i*2]; var prec1 = w1.precision; var daño1 = w1.daño;
         var p2 = v_players[i*2+1]; var w2 = v_armas[i*2+1]; var prec2 = w2.precision; var daño2 = w2.daño;
         var visibilidad = Math.floor(Math.random() * (100 - 0));
@@ -308,12 +353,12 @@ async function simular(){
         var string_personaje = 'personaje:' + v_players[i*2].id;
         var string_personaje2 = 'personaje:' + v_players[i*2+1].id;
 
-        if(prec1 > visibilidad){    //le da si la precisión supera a la visibilidad
+        if(prec1 > visibilidad){    // le da si la precisión supera a la visibilidad
             v_players[i*2+1].vida = v_players[i*2+1].vida - w1.daño;
 
             client.hset(string_personaje2, 'vida', v_players[i*2+1].vida);
 
-            if(v_players[i*2+1].vida<=0){ //p1 mata a p2
+            if(v_players[i*2+1].vida<=0){ // p1 mata a p2
 
                 client.zincrby(zset1,1,v_players[i*2+1].nombre);
                 v_kills[i*2] =  v_players[i*2].id;
@@ -321,7 +366,7 @@ async function simular(){
                 v_players[i*2+1].vida = 100;
                 client.hset(string_personaje2, 'vida', v_players[i*2+1].vida);
 
-                console.log('Soy ' + v_players[i*2].id + 'he matado a ' +  v_players[i*2+1].id);
+                console.log('Soy ' + v_players[i*2].id + ' he matado a ' +  v_players[i*2+1].id);
 
                 if(v_players[i*2].n_arma_actual==5){
                     if(ganador=="-"){
@@ -398,26 +443,31 @@ async function update_all() {
 
     
     for (let i = 0; i < 20; i++) {
-
         var personaje3 = 'personaje:' + i;
-
         // obtenemos su itinerario
         await client.hget(personaje3, 'imagen', function(err, reply) {
-
                 var imgAux= reply;
                 v_players_all[i].img=imgAux;
-
         });
     }
 }
 
+    //Obtiene todos los jugadores en juego para mostrarlos
+    app.get('/partidaFinalizada', function(req, res) {
+        res.send(ganador);
+    });
 
     //Obtiene todos los jugadores en juego para mostrarlos
     app.get('/Jugador/all', function(req, res) {
 
         var arrayAux = v_players_all;
         arrayAux.sort(compare);
-        res.send(arrayAux);
+        var response = [];
+        response[0] = ganador;
+        for(var i=0; i<arrayAux.length; i++){
+            response[i+1] = arrayAux[i];
+        }
+        res.send(response);
     });
 
 
