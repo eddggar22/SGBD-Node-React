@@ -1,6 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'
 
-const PlayerList = ({jugadores}) => {
+
+const PlayerList = (() => {
+
+    
+    const [jugadores, setJugadores] = useState([])
+    useEffect(() => {
+    
+     const getJugadores = () => {
+           
+         axios.get('http://localhost:9000/Jugador/all').then(res => {
+           if (res.data[0] !== "-") {
+             clearTimeout(game);
+             window.location.assign("http://localhost:3000/resultados");
+           }
+           var response = [];
+           for (var i = 0; i < 20; i++) {
+             response[i] = res.data[i + 1];
+           }
+           setJugadores(response)
+         })
+           .catch(err => { console.log(err) })
+     }
+     var game = setInterval(() => {
+       getJugadores();
+     }, 3000);
+      }, [])
 
     return ( 
         <table className='table'>
@@ -36,7 +62,7 @@ const PlayerList = ({jugadores}) => {
 
         </table>
     );
-}
+})
  
 export default PlayerList;
 

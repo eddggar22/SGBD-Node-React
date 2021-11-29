@@ -242,6 +242,16 @@ class PlayerReact {
     }
 }
 
+class PlayerReactResultado {
+    constructor(id, nombre, n_arma_actual, vida, img) {
+      this.id = id;
+      this.nombre = nombre;
+      this.n_arma_actual = n_arma_actual;
+      this.vida = vida;
+      this.img = img;
+    }
+}
+
 class Arma {
     constructor(precision, daño) {
       this.precision = precision;
@@ -452,82 +462,87 @@ async function update_all() {
     }
 }
 
-    //Obtiene todos los jugadores en juego para mostrarlos
-    app.get('/partidaFinalizada', function(req, res) {
-        res.send(ganador);
-    });
-
-    //Obtiene todos los jugadores en juego para mostrarlos
-    app.get('/Jugador/all', function(req, res) {
-
-        var arrayAux = v_players_all;
-        arrayAux.sort(compare);
-        var response = [];
-        response[0] = ganador;
-        for(var i=0; i<arrayAux.length; i++){
-            response[i+1] = arrayAux[i];
-        }
-        res.send(response);
-    });
-
-
-    //actualiza las kills de un jugador
-    app.post('/updatePlayerKills/:kills', function(req, res) {
-        var kills = req.params.kills;
-        update_kills(kills);
-        
-    });
-
-    //actualiza las kills de un jugador
-    async function update_kills(kills){
-        var personaje = 'personaje:' + 0;
-        var muertes = 0;
-
-        await client.hget(personaje, 'n_arma_actual', function(err, reply) {
-            n_arma_actual = reply;
-            var set = parseInt(n_arma_actual) + parseInt(kills);
-            client.hset(personaje, 'n_arma_actual', set );
-            update_all();
-        });
-
-
+//Obtiene todos los jugadores en juego para mostrarlos
+app.get('/Jugador/all', function(req, res) {
+    var arrayAux = v_players_all;
+    arrayAux.sort(compare);
+    var response = [];
+    response[0] = ganador;
+    for(var i=0; i<arrayAux.length; i++){
+        response[i+1] = arrayAux[i];
     }
+    res.send(response);
+});
 
-    //actualizzaz la vida de un jugador
-    app.post('/updatePlayerVida/:vida', function(req, res) {
-        var vida = req.params.vida;
-        update_vida(vida);
-    });
-
-    //actualizzaz la vida de un jugador
-    async function update_vida(vida){
-
-        var personaje = 'personaje:' + 0;
-        
-        await client.hget(personaje, 'vida', function(err, reply) {
-
-            vida_act = reply;
-            var set = parseInt(vida_act) - parseInt(vida);
-            client.hset(personaje, 'vida', set );
-            update_all();
-        });
+//Obtiene todos los jugadores en juego para mostrarlos
+app.get('/resultado', function(req, res) {
+    var arrayAux = [];
+    for(var i=0; i<v_players_all.length; i++){
+        arrayAux.push(new PlayerReactResultado(
+            v_players_all[i].id,
+            v_players_all[i].nombre,
+            v_players_all[i].n_arma_actual,
+            v_players_all[i].vida,
+            v_players_all[i].img));
     }
-  
+    arrayAux.sort(compare);
+    // var response = [];
+    // response[0] = ganador;
+    // for(var i=0; i<arrayAux.length; i++){
+    //     response[i+1] = arrayAux[i];
+    // }
+    res.send(arrayAux);
+});
 
-    //mira si un jugador existe
-    app.get('/exists/:id', function(req, res) {
-        var personaje = 'personaje:' + req.params.id;
-        if (client.exists(personaje,  function(err, reply) {
-            if (reply == 1) {
-                res.send('exists');
-            } else {
-                res.send('doesn\'t exist');
-            }
-        }));
-    });
-
-
+//actualiza las kills de un jugador
+app.post('/updatePlayerKills/:kills', function(req, res) {
+    var kills = req.params.kills;
+    update_kills(kills);
     
+});
+
+//actualiza las kills de un jugador
+async function update_kills(kills){
+    var personaje = 'personaje:' + 0;
+    var muertes = 0;
+    await client.hget(personaje, 'n_arma_actual', function(err, reply) {
+        n_arma_actual = reply;
+        var set = parseInt(n_arma_actual) + parseInt(kills);
+        client.hset(personaje, 'n_arma_actual', set );
+        update_all();
+    });
+}
+
+//actualizzaz la vida de un jugador
+app.post('/updatePlayerVida/:vida', function(req, res) {
+    var vida = req.params.vida;
+    update_vida(vida);
+});
+
+//actualizzaz la vida de un jugador
+async function update_vida(vida){
+    var personaje = 'personaje:' + 0;
+    
+    await client.hget(personaje, 'vida', function(err, reply) {
+        vida_act = reply;
+        var set = parseInt(vida_act) - parseInt(vida);
+        client.hset(personaje, 'vida', set );
+        update_all();
+    });
+}
+
+//mira si un jugador existe
+app.get('/exists/:id', function(req, res) {
+    var personaje = 'personaje:' + req.params.id;
+    if (client.exists(personaje,  function(err, reply) {
+        if (reply == 1) {
+            res.send('exists');
+        } else {
+            res.send('doesn\'t exist');
+        }
+    }));
+});
+
 
 function compare(a, b) {
     if (a.n_arma_actual > b.n_arma_actual) return -1;

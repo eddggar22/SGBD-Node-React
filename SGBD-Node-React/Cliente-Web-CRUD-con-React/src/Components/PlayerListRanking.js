@@ -1,32 +1,49 @@
-import React from 'react';
+import React, {Component} from 'react';
+import './App.css';
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import DataTable, { Alignment } from 'react-data-table-component';
 
-const PlayerListRanking = ({jugadores}) => {
+const column = [
+    {
+        name: 'Nombre',
+        selector: 'nom',
+        sortable: false
+    },
+    {
+        name: 'Puntuación',
+        selector: 'puntuacio',
+        sortable: true
+    }
+]
 
-    return ( 
-        <table className='table' style={{alignItems:'center',}}>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Puntuación</th>
-                </tr>
-            </thead>
-            <tbody>
-                {jugadores.map(jugador =>(
-                 <tr>
-                    <th>{jugador.nom}</th>
-                    <th>{jugador.puntuacio}</th>
-                  </tr>
-                )
-                )}
-            </tbody>
+class PlayerListRanking extends Component{
+    state = {
+        usuaris: []
+    }
+    componentDidMount(){
+        axios.get('http://localhost:4000/info').then(response => {
+            console.log(response);
+            const usuaris = response.data;
+            this.setState({ usuaris });
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    }
+    render(){
+        return (
+            <div className="App">
+                <DataTable
+                    columns={column}
+                    data={this.state.usuaris}
+                    title="Ranking jugadores"
+                    className="table"
+                />
+            </div>
 
-        </table>
-    );
+        );
+    }
 }
- 
+
 export default PlayerListRanking;
-
-   
-//<img src={jugador.img} alt="40" height="40" />
-
-//<img src={"/images/4.png"} alt="40" height="40" />

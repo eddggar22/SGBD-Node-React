@@ -1,7 +1,7 @@
 import { React, Fragment, useState, useEffect } from 'react';
 import Navbar from './Components/Navbar'
 import PlayerList from './Components/PlayerList'
-import PlayerListRanking from './Components/PlayerListRanking'
+import PlayerListResultat from './Components/PlayerListResultat'
 import Form from './Components/Form'
 import axios from 'axios'
 import {
@@ -22,28 +22,27 @@ function App() {
 
   const [jugadores, setJugadores] = useState([])
 
-  const [jugadoresSQL, setJugadoresSQL] = useState([])
+  const [jugadoresSQL, setJugadores] = useState([])
 
   var partidaActiva = false;
 
 
   useEffect(() => {
 
-    const getJugadoresSQL = () => {
-      axios.get('http://localhost:4000/info').then(res => {
-        console.log("Peticio rebuda");
-        console.log(res);
-        setJugadoresSQL(res.data)
-      })
-        .catch(err => { console.log(err) });
-    }
+    // const getJugadoresSQL = () => {
+    //   axios.get('http://localhost:4000/info').then(res => {
+    //     console.log("Peticio rebuda");
+    //     console.log(res);
+    //     setJugadoresSQL(res.data)
+    //   })
+    //     .catch(err => { console.log(err) });
+    // }
 
     const getJugadores = () => {
-      // fetch('http://localhost:9000/Jugador/1').then(res=>res.json()).then(res =>setJugadores(res))
-      
+          
         axios.get('http://localhost:9000/Jugador/all').then(res => {
           if (res.data[0] !== "-") {
-            window.location.assign("http://localhost:3000/resultats");
+            window.location.assign("http://localhost:3000/resultados");
             getJugadoresSQL();
           }
           var response = [];
@@ -56,7 +55,7 @@ function App() {
       
 
     }
-    getJugadoresSQL();
+    // getJugadoresSQL();
     setInterval(() => {
       getJugadores();
     }, 3000);
@@ -76,12 +75,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/resultats" element={
+      <Route path="/ranking" element={
+          <Fragment>
+            <Navbar brand='Batallas App' />
+
+          </Fragment>
+        }>
+        </Route>
+        <Route path="/resultados" element={
           <Fragment>
             <Navbar brand='Batallas App' />
             <div class="contenedor2">
               <h2 style={{ textAlign: 'center' }}>Ranking jugadores</h2>
-              <PlayerListRanking jugadores={jugadoresSQL} />
+              <PlayerListResultat jugadores={jugadores} />
             </div>
           </Fragment>
         }>
