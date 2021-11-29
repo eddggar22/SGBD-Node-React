@@ -43,8 +43,3 @@ const PlayerListResultado = () => {
 }
  
 export default PlayerListResultado;
-
-   
-//<img src={jugador.img} alt="40" height="40" />
-
-//<img src={"/images/4.png"} alt="40" height="40" />

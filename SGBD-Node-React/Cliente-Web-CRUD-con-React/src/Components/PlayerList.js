@@ -4,29 +4,27 @@ import axios from 'axios'
 
 const PlayerList = (() => {
 
-    
     const [jugadores, setJugadores] = useState([])
-    useEffect(() => {
     
+    useEffect(() => {
      const getJugadores = () => {
-           
-         axios.get('http://localhost:9000/Jugador/all').then(res => {
-           if (res.data[0] !== "-") {
-             clearTimeout(game);
-             window.location.assign("http://localhost:3000/resultados");
-           }
-           var response = [];
-           for (var i = 0; i < 20; i++) {
-             response[i] = res.data[i + 1];
-           }
-           setJugadores(response)
-         })
-           .catch(err => { console.log(err) })
+        axios.get('http://localhost:9000/Jugador/all').then(res => {
+        if (res.data[0] !== "-") {
+          clearTimeout(game);
+          window.location.assign("http://localhost:3000/resultados");
+        }
+        var response = [];
+        for (var i = 0; i < 20; i++) {
+          response[i] = res.data[i + 1];
+        }
+        setJugadores(response)
+      })
+      .catch(err => { console.log(err) })
      }
      var game = setInterval(() => {
        getJugadores();
      }, 3000);
-      }, [])
+    }, [])
 
     return ( 
         <table className='table'>
@@ -53,20 +51,11 @@ const PlayerList = (() => {
                     <td>
                     <img src={jugador.img} alt="40" height="40" />
                     </td>
-                    
                   </tr>
-                )
-                )}
-                
+                ))}
             </tbody>
-
         </table>
     );
 })
  
 export default PlayerList;
-
-   
-//<img src={jugador.img} alt="40" height="40" />
-
-//<img src={"/images/4.png"} alt="40" height="40" />
