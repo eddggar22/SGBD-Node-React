@@ -38,7 +38,6 @@ class PlayerListRanking extends Component{
                     columns={column}
                     data={this.state.usuaris}
                     title="Ranking jugadores"
-                    className="table"
                 />
             </div>
 
