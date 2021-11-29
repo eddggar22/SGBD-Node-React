@@ -7,13 +7,13 @@ import DataTable from 'react-data-table-component';
 
 const column = [
   {
-    name: 'alias',
-    selector: 'alias',
-    sortable: true
-  },
-  {
     name: 'nom',
     selector: 'nom',
+    sortable: false
+  },
+  {
+    name: 'puntuacio',
+    selector: 'puntuacio',
     sortable: true
   }
 ]
