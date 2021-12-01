@@ -11,7 +11,7 @@ const { promisify, isBuffer } = require("util");
 // Puerto de escucha de node.js API (9000)      
 app.listen(9000,() => console.log('listening port 9000'));
 
-//
+
 app.use(cors())
 
 // Creación cliente redis. Conectado a docker.             
@@ -19,7 +19,7 @@ var redis = require('redis');
 const { addAbortSignal } = require('stream');
 var client = redis.createClient(); 
 
-// Promisifying Get and set methods
+// Habilitacion de funciones asincronas
 const GET_ASYNC = promisify(client.get).bind(client);
 const SET_ASYNC = promisify(client.set).bind(client);
 
@@ -43,167 +43,8 @@ app.post('/',function(req,res){
     f_itinerario();
     armas();
     ganador="-";
-    // res.sendFile(path.join(__dirname+'/index.html'));
     iniciarSimulacion();
 });
-
-function iniciarSimulacion(){
-    ///BUCLE PARA IR ACTUALIZANDO DE FORMA AUTOMÁTICA BD///
-    ///<----------------------------------------------->\\\
-    //Cada 1s ejecuta la función especificada
-    var myInt = setInterval(function () {
-        if(ganador=="-"){
-            // pull, carga todos los datos de los jugadores de base de datos redis a proceso
-            pull_datos();
-
-            // mostramos los jugadores para ver sus armas que todo esté correcto
-            //showPlayers();
-           
-            // simulamos una ronda de disparos 
-            simular();
-
-            //actualizamos el vector de jugadores por si nos hacen un app.get('/Jugador/all')
-            update_all();
-
-            //Podemos visualiozar el estado final de todos los jugadores después de dispararse
-            //showPlayersall();
-
-            // exit si gana un jugador
-            // fin_partida();
-        }else{
-            console.log(ganador);
-            clearInterval(myInt);
-            actualizarBaseDatosSQL(); 
-        }
-    }, 2500);
-}
-
-function actualizarBaseDatosSQL(){
-    var arrayAux = v_players_all;
-    arrayAux.sort(compare);
-    console.log("arrayAux.length -> " + arrayAux.length);
-    for(let i=1;i<20;i++){ 
-        const request = require('request');
-
-        const valor1 = arrayAux[i].nombre;
-        const valor2 = 100 - ((i-1) * 5);
-        console.log("------");
-        console.log("i -> " + i);
-        console.log("valor1 -> " + valor1);
-        console.log("valor2 -> " + valor2);
-        const params = `param1=${valor1}&param2=${valor2}`;
-    
-        request(
-        {
-            method: "GET",
-            uri: `http://localhost:4000/actualitzarPersonatges?${params}`,
-            json: true,
-        },
-        (error, response, body) => {
-            if (error) {
-            throw error;
-            }
-            console.log(body);
-        }
-        );
-    }
-}
-
-///FUNCIONES PARA CARGAR REDIS AL INICIALIZARSE LA API///
-///<------------------------------------------------->\\\
-
-// Inicializamos en redis tres listas con los diferentes
-// itinerarios de armas
-async function f_itinerario(){
-    client.rpush('itinerario:0', [1, 2, 3, 4, 5, 6,7]);
-    client.rpush('itinerario:1', [4, 3, 6, 1, 5, 2,7]);
-    client.rpush('itinerario:2', [6, 3, 5, 4, 2, 1,7]);
-}
-
-// Inicializamos en redis un bloque hash para cada arma
-// con sus correspondientes atributos
-async function armas(){
-    await  client.del('personaje:-1');
-    for(let i=0;i<7;i++){
-        var precision = Math.floor(Math.random() * (100 - 50) + 50);
-        var daño = Math.floor(Math.random() * (100 - 50) + 50);
-        var arma = 'arma:' + i;
-        client.hmset(arma,'numero',i,'precision',precision,'daño',daño);
-    }
-}
-
-// Carga de personajes 
-async function cargar_personajes(){
-    // Search Data in Redis
-    const reply = await GET_ASYNC("character");
-
-    // if exists returns from redis and finish with response
-    if (reply) return res.send(JSON.parse(reply));
-
-    // Fetching Data from Rick and Morty API
-    const response = await axios.get(
-        "https://rickandmortyapi.com/api/character/?page=1"
-    );
-
-    const response2 = await axios.get(
-        "https://rickandmortyapi.com/api/character/?page=2"
-    );
-
-    var array = (response.data.results).concat(response2.data.results);
-    
-    // resond to client, hash para cada jugador
-    for(let i=1;i<=20;i++){                              // <----------------------------------------------- QUITADO EL MENOR O IGUAL DE VENTE
-            var _name = array[i].name;
-            var imagen = array[i].image;
-            var itinerario = Math.floor(Math.random() * (3 - 0));
-            var id = 'personaje:' + i;
-            client.hmset(id,'id',i,'nombre', _name, 'vida', 100, 'muertes', 0, 'imagen', imagen, 'grupo_armas', itinerario, 'n_arma_actual', 0);
-            const request = require('request');
-
-            const valor1 = _name;
-            const valor2 = 0;
-            const params = `param1=${valor1}&param2=${valor2}`;
-    
-            request(
-            {
-                method: "GET",
-                uri: `http://localhost:4000/insertarPersonatges?${params}`,
-                json: true,
-            },
-            (error, response, body) => {
-                if (error) {
-                    console.log(error);
-                    throw error;
-                }
-                console.log(body);
-            }
-            );
-    }
-    client.hmset('personaje:0', 'id', 0, 'nombre', 'myPlayer', 'vida', 100, 'muertes', 0, 'imagen', array[25].image, 'grupo_armas', 2, 'n_arma_actual', 0);
-/*
-    //RAUL
-    const request = require('request');
-
-    const valor1 = "myPlayer";
-    const valor2 = 0;
-    const params = `param1=${valor1}&param2=${valor2}`;
-
-    request(
-    {
-        method: "GET",
-        uri: `http://localhost:4000/insertarPersonatges?${params}`,
-        json: true,
-    },
-    (error, response, body) => {
-        if (error) {
-        throw error;
-        }
-        console.log(body);
-    }
-    );
-    //RAUL*/
-
-}
 
 //Definimos clases
 class Player {
@@ -244,6 +85,7 @@ class Arma {
     }
 }
 
+
 var ganador = "-";
 var px = new Player(-1,'nombre_default','-',-1,100);
 var ar = new Arma(0,0);
@@ -254,6 +96,7 @@ var pr = new PlayerReact(-1,'nombre_default', -1,-1,100, 'no_img');
 var v_players_all = [pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr,pr];
 var id_personajes = ['','','','','','','','','',''];
 var ids =  [0,0,0,0,0,0,0,0,0,0];
+
 
 function initzalitzar_de_nou(){
     ganador = "-";
@@ -269,8 +112,143 @@ function initzalitzar_de_nou(){
 }
 
 
-// Muestra atributos de jugadores por terminal para ver
-// como evolucionan a lo largo de la partida
+
+ // Bucle para ir actualizando de forma automática BD
+function iniciarSimulacion(){
+
+    //Cada 2.5s ejecuta la función especificada
+    var myInt = setInterval(function () {
+        if(ganador=="-"){
+            // pull, carga todos los datos de los jugadores de base de datos redis a proceso
+            pull_datos();
+
+            // mostramos los jugadores para ver sus armas que todo esté correcto
+            //showPlayers();
+           
+            // simulamos una ronda de disparos 
+            simular();
+
+            //actualizamos el vector de jugadores por si nos hacen un app.get('/Jugador/all')
+            update_all();
+
+
+        }else{
+            console.log(ganador);
+            clearInterval(myInt);
+            actualizarBaseDatosSQL(); 
+        }
+    }, 2500);
+}
+
+function actualizarBaseDatosSQL(){
+
+    var arrayAux = v_players_all.sort(compare);
+    
+    for(let i=0;i<20;i++){ 
+
+        if(arrayAux[i].nombre != "myPlayer"){
+
+        const request = require('request');
+        const valor1 = arrayAux[i].nombre;
+        const valor2 = 100 - (i * 5);
+        const params = `param1=${valor1}&param2=${valor2}`;
+    
+        request(
+        {
+            method: "GET",
+            uri: `http://localhost:4000/actualitzarPersonatges?${params}`,
+            json: true,
+        },
+        (error, response, body) => {
+            if (error) {
+            throw error;
+            }
+            console.log(body);
+        }
+        );
+    }
+    }
+}
+
+///FUNCIONES PARA CARGAR REDIS AL INICIALIZARSE LA API///
+
+// Inicializamos en Redis tres listas con los diferentes itinerarios de armas
+async function f_itinerario(){
+
+    client.rpush('itinerario:0', [1, 2, 3, 4, 5, 6,7]);
+    client.rpush('itinerario:1', [4, 3, 6, 1, 5, 2,7]);
+    client.rpush('itinerario:2', [6, 3, 5, 4, 2, 1,7]);
+}
+
+// Inicializamos en redis un bloque hash para cada arma con sus correspondientes atributos
+async function armas(){
+
+    await  client.del('personaje:-1');
+
+    for(let i=0;i<7;i++){
+        
+        var precision = Math.floor(Math.random() * (100 - 50) + 50);
+        var daño = Math.floor(Math.random() * (100 - 50) + 50);
+        var arma = 'arma:' + i;
+        client.hmset(arma,'numero',i,'precision',precision,'daño',daño);
+    }
+}
+
+// Carga de personajes 
+async function cargar_personajes(){
+    
+    const reply = await GET_ASYNC("character");
+
+    // Si existe devuelve de redis y acaba la respuesta
+    if (reply) return res.send(JSON.parse(reply));
+
+    // Cargar los datos de la API de Rick and Morty
+    const response = await axios.get(
+        "https://rickandmortyapi.com/api/character/?page=1"
+    );
+
+    const response2 = await axios.get(
+        "https://rickandmortyapi.com/api/character/?page=2"
+    );
+
+    var array = (response.data.results).concat(response2.data.results);
+    
+    // Respuesta para el cliente, un hash para cada jugador
+    for(let i=1;i<=20;i++){  
+
+            var _name = array[i].name;
+            var imagen = array[i].image;
+            var itinerario = Math.floor(Math.random() * (3 - 0));
+            var id = 'personaje:' + i;
+            client.hmset(id,'id',i,'nombre', _name, 'vida', 100, 'muertes', 0, 'imagen', imagen, 'grupo_armas', itinerario, 'n_arma_actual', 0);
+            const request = require('request');
+
+            const valor1 = _name;
+            const valor2 = 0;
+            const params = `param1=${valor1}&param2=${valor2}`;
+    
+            request(
+            {
+                method: "GET",
+                uri: `http://localhost:4000/insertarPersonatges?${params}`,
+                json: true,
+            },
+            (error, response, body) => {
+                if (error) {
+                    console.log(error);
+                    throw error;
+                }
+                console.log(body);
+            }
+            );
+    }
+    client.hmset('personaje:0', 'id', 0, 'nombre', 'myPlayer', 'vida', 100, 'muertes', 0, 'imagen', array[25].image, 'grupo_armas', 2, 'n_arma_actual', 0);
+
+}
+
+
+
+// Muestra atributos de jugadores por terminal para ver como evolucionan a lo largo de la partida
 function showPlayers(){
     for(var i=0;i<10;i++){
         console.log('nombre ' + v_players[i].nombre);
@@ -292,7 +270,7 @@ function showPlayersall(){
     }
 }
 
-
+//Rellena un vector de 10 posiciones con jugadores aleatorios.
 async function pull_datos() {
 
     for (let i = 0; i < 10; i++) {
@@ -311,14 +289,14 @@ async function pull_datos() {
         }
     }
 
-    // para cada uno de ellos obttendremos sus atributos y armas 
+    // para cada uno de ellos obtendremos sus atributos y armas 
     for (let i = 0; i < 10; i++) {
         personaje = id_personajes[i];
         actualizarVector(personaje, i);
     }
 }
 
-
+//Actualiza el personaje de la posicion "i" del vector v_players con la infromacion de la Redis
 async function actualizarVector(personaje, i){
 
     await client.hmget(personaje, 'nombre', 'n_arma_actual', 'grupo_armas', 'vida', 'id', function(err, reply) {
@@ -340,6 +318,7 @@ async function actualizarVector(personaje, i){
 async function simular(){
 
     for(let i=0; i<5; i++){
+
         var p1 = v_players[i*2]; var w1 = v_armas[i*2]; var prec1 = w1.precision; var daño1 = w1.daño;
         var p2 = v_players[i*2+1]; var w2 = v_armas[i*2+1]; var prec2 = w2.precision; var daño2 = w2.daño;
         var visibilidad = Math.floor(Math.random() * (100 - 0));
@@ -386,6 +365,7 @@ async function simular(){
 
 
 async function update_all() {
+    
     //10 jugadores aleatorios colocados en el vector
     var arr = [0,1,2,3,4,5,6,7,8,9], itinerario=[0,0];
     var nombre = '-', key_arma_actual = '-';
@@ -471,11 +451,6 @@ app.get('/resultado', function(req, res) {
             v_players_all[i].img));
     }
     arrayAux.sort(compare);
-    // var response = [];
-    // response[0] = ganador;
-    // for(var i=0; i<arrayAux.length; i++){
-    //     response[i+1] = arrayAux[i];
-    // }
     res.send(arrayAux);
 });
 
