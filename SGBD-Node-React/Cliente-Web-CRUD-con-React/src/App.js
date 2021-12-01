@@ -74,18 +74,15 @@ function App() {
               <br></br>
               <p>Todas las simulaciones quedaran registradas, y los jugadores que colaboren recibiran bonificaciones en un futuro! </p>
               <br></br>
-              <Link to="/partida">
-                <button onClick={() => {
-                  iniciarPartida();
-                }}>
-                  Iniciar partida
-                </button>
-                <Link to="/resultats">
-                  <button class="right">
-                    Ir a resultados
+              <div class="center">
+                <Link to="/partida">
+                  <button onClick={() => {
+                    iniciarPartida();
+                  }}>
+                    Iniciar partida
                   </button>
                 </Link>
-              </Link>
+              </div>
             </div>
           </Fragment>
         }>
