@@ -30,14 +30,14 @@ function App() {
       <Routes>
       <Route path="/ranking" element={
           <Fragment>
-            <Navbar brand='Batallas App' />
+            <Navbar/>
             <PlayerListRanking />
           </Fragment>
         }>
         </Route>
         <Route path="/resultados" element={
           <Fragment>
-            <Navbar brand='Batallas App' />
+            <Navbar />
             <div class="contenedor2">
               <h2 style={{ textAlign: 'center' }}>Resultado partida</h2>
               <PlayerListResultado/>
@@ -47,7 +47,7 @@ function App() {
         </Route>
         <Route path="/partida" element={
           <Fragment>
-            <Navbar brand='Batallas App' />
+            <Navbar/>
             <div className="container">
               <div className="row">
                 <div className="col-7" style={{ backgroundColor: 'white'}}>
@@ -55,7 +55,7 @@ function App() {
                   <PlayerList/>
                 </div>
                 <div className="col-5" style={{ backgroundColor: 'white', padding: '25px', }}>
-                  <h2 style={{ textAlign: 'center' }}>SetPlayer</h2>
+                  <h2 style={{ textAlign: 'center' }}>Nuestro Jugador</h2>
                   <Form myPlayer={myPlayer} setmyPlayer={setmyPlayer} />
                 </div>
               </div>
@@ -66,11 +66,11 @@ function App() {
         <Route path="/" element={
           // dos botons, un per veure la classificació i otro partida nueva
           <Fragment>
-            <Navbar brand='Batallas App' />
+            <Navbar/>
             <div class="contenedor">
               <br></br>
               <h1>¡Bienvenido al simulador de CrossFire Fights!</h1>
-              <p>Este juego esta en desarrollo, de momento puede entretenerse y probar de forma gratuita el simulador de partidas, para de esta forma ayudar a los desarrolladores a recoger datos sobre el funcionamiento.</p>
+              <p>Este juego esta en desarrollo, de momento puede entretenerse y probar de forma gratuita el simulador de partidas, de esta forma ayudar a los desarrolladores a recoger datos sobre el funcionamiento.</p>
               <br></br>
               <p>Todas las simulaciones quedaran registradas, y los jugadores que colaboren recibiran bonificaciones en un futuro! </p>
               <br></br>
