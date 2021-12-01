@@ -52,6 +52,12 @@ code {
   display: inline-block;*/
 }
 
+.center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .contenedor button:hover{
   background-color: rgb(44, 44, 44); /* Green */
   color: white;
