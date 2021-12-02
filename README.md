@@ -16,6 +16,22 @@ node ./app.js
 
 ## Servidor SQL (./serverMySQL)
 
+1.Requisits per a poder executar l' aplicació:
+    1.1 Tenir Docker
+    1.2 En el Docker tenir el SGDB de mysql executant-se en el port 3307
+        1.2.1 Tenir l'usuario "arun" cret amb tots els permisos
+        1.2.2 Dins del SGDB tenir una BD anomenada "clasificacionsJugadors" 
+            1.2.1 Per crear-la utilitzar la següent comanda: 
+            ```
+            CREATE DATABASE clasificacionsJugadors;
+            ```
+        1.3 Tenir la taula "clasificacio", on es guardaran les dades
+             1.3.1 Per crear-la, utilitzar la següent comanda:
+            ```
+            CREATE TABLE clasificacio( id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nom VARCHAR(200) UNIQUE, puntuacio int);
+            ```
+    1.4 En el Docker tenir el SGDB de redis executant-se en el port 6379
+
 Aquest directori conté el codi font del servidor SQL que hem configurat. S'han de seguir els mateixos pasos que en el cas anterior, accedir al directori, descarregar els paquets i executar.
 
 ```
